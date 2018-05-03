@@ -1,7 +1,8 @@
 import * as fs from 'fs'
 import * as Path from 'path'
 import {promisify} from 'util'
-import {Config} from './config'
+import {load as loadConfig} from './config'
+import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -23,7 +24,8 @@ export interface Day {
   total: number,
 }
 
-export async function parse(config: Config) {
+export async function parse() {
+  const config = await loadConfig()
   const {path} = config
 
   if (!await exists(path)) {
@@ -36,6 +38,7 @@ export async function parse(config: Config) {
 
   return days
 }
+
 function parseDay(match: RegExpExecArray, config: Config): Day {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)

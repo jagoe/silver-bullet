@@ -1,61 +1,53 @@
 import deepMerge = require('deep-merge')
 import * as fs from 'fs'
+import * as minimist from 'minimist'
 import {homedir} from 'os'
 import * as Path from 'path'
 import {promisify} from 'util'
+import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
+let _config: Config
 
-export interface Mapping {
-  projectNr: number,
-  packageNr: number,
-  comment?: string
-}
-
-export interface Config {
-  path: string,
-  maxEntries: number,
-  hotkeys: {
-    insert: string,
-    next: string,
-    prev: string,
-    reset: string,
-    week: string,
+const {config: configPath, preview} = minimist(process.argv.slice(2), {
+  alias: {
+    c: 'config',
+    p: 'preview',
   },
-  mappings: {[key: string]: Mapping}
-}
+  default: {
+    c: Path.join(homedir(), '.silverbullet.json'),
+    p: false,
+  },
+})
 
 const defaultConfig: Config = {
   path: Path.join(homedir(), 'time.txt'),
-  maxEntries: 7,
-  hotkeys: {
-    insert: 'alt+shift+i',
-    next: 'alt+shift+n',
-    prev: 'alt+shift+p',
-    reset: 'alt+shift+r',
-    week: 'alt+shift+w',
-  },
   mappings: {},
+  preview,
 }
 
 /**
  * Loads the configuration, merging it with an optional user-defined config.json
  */
-export async function load(configPath: string) {
-  let config = defaultConfig
+export async function load() {
+  if (_config) {
+    return _config
+  }
+
+  _config = defaultConfig
 
   const userConfig = await readConfig(configPath)
   if (userConfig) {
     const merge = deepMerge((_a, b) => b)
-    config = merge(defaultConfig, userConfig)
-    // config = Object.assign({}, defaultConfig, userConfig)
-    if (config.path.startsWith('~/')) {
-      config.path = config.path.replace('~', homedir())
+    _config = merge(defaultConfig, userConfig)
+
+    if (_config.path.startsWith('~/')) {
+      _config.path = _config.path.replace('~', homedir())
     }
   }
 
-  return config
+  return _config
 }
 
 async function readConfig(path: string) {
