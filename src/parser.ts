@@ -7,7 +7,7 @@ import Config from './models/config'
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
 const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.|\s)+?)(\r?\n){2}/g
-const entryPattern = /(\d\d):(\d\d).+?(\d\d):(\d\d) (.+?)(?:(?:: ?(.+))|\n)/g
+const entryPattern = /(\d\d):(\d\d).+?(\d\d):(\d\d) (.+)/g
 
 export interface Entry {
   start: Date,
@@ -64,7 +64,9 @@ function parseEntry(match: RegExpExecArray, config: Config): Entry {
   const end = getTimeOfDay(match[3], match[4])
   const duration = (end.getHours() - start.getHours()) + (end.getMinutes() - start.getMinutes()) / 60
 
-  const shorthand = match[5]
+  const text = match[5].split(':')
+  const shorthand = text[0]
+
   const configEntry = config.mappings[shorthand]
   if (!configEntry) {
     throw new Error(`No mapping found for entry ${raw}`)
@@ -72,7 +74,7 @@ function parseEntry(match: RegExpExecArray, config: Config): Entry {
 
   const entryPackage = `${configEntry.projectNr}-${configEntry.packageNr}`
 
-  const comment = match[6] || configEntry.comment
+  const comment = text[1] || configEntry.comment
   if (!comment) {
     throw new Error(`Comment missing for entry ${raw}`)
   }
