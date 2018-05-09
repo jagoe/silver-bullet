@@ -1,5 +1,5 @@
 {
-  "name": "silver-bullet",
+  "name": "silverbullet",
   "version": "0.1.0",
   "description": "Consumes a text file with tracked days and a project mapping file and provides shortcuts to automatically enter work durations and descriptions for the correct projects into projectile fields.",
   "main": "./dist/index.js",
@@ -12,10 +12,10 @@
     "lint": "tslint --project tsconfig.json --fix --format codeFrame",
     "mocha": "NODE_ENV=test mocha --opts mocha.opts",
     "prestart": "yarn build",
-    "start": "node ./bin/silver-bullet",
+    "start": "node ./bin/silverbullet",
     "test": "yarn lint && yarn mocha",
     "predeploy": "yarn build",
-    "deploy": "cp -fru -t ~/bin/_silver-bullet bin dist node_modules"
+    "deploy": "cp -fru -t ~/bin/_silverbullet bin dist node_modules"
   },
   "files": [
     "bin",

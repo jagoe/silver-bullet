@@ -15,11 +15,11 @@ const { help } = minimist(
 
 if (help) {
   console.log([
-    'usage: silver-bullet [options]',
+    'usage: silverbullet [options]',
     'Without options the time tracking file will be opened for editing.',
     '',
     'options:',
-    '  -c --config  Path to the config file. [~/.silver-bullet.json]',
+    '  -c --config  Path to the config file. [~/.silverbullet.json]',
     '  -p --preview Add this flag to show a preview of the time data next to the input file instead of submitting.' +
     ' Optionally supply the output file path.',
     '  -h --help    Print this list and exit.'
