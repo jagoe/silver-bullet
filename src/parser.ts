@@ -49,6 +49,7 @@ function parseDay(match: RegExpExecArray, config: Config): Day {
 
   validateTimeline(entries)
   entries = combine(entries)
+  entries = entries.sort((a, b) => a.package.localeCompare(b.package))
 
   return {
     weekday: date.getDay(),
