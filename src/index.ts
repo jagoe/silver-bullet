@@ -1,4 +1,6 @@
+import {exec} from 'child_process'
 import * as fs from 'fs'
+import * as minimist from 'minimist'
 import {promisify} from 'util'
 import {load as loadConfig} from './config'
 import Config from './models/config'
@@ -7,12 +9,20 @@ import {Day, parse} from './parser'
 const exists = promisify(fs.exists)
 const writeFile = promisify(fs.writeFile)
 
+const argv = minimist(process.argv)
+
 export async function start() {
   const config = await loadConfig()
+  if (Object.keys(argv).length === 1) {
+    exec(`${config.editor} ${config.path}`)
+    return
+  }
+
   const week = await parse()
 
   if (config.preview) {
-    return print(config, week)
+    const path = await print(config, week)
+    exec(`${config.editor} ${path}`)
   }
 }
 
@@ -30,4 +40,6 @@ async function print(config: Config, week: Array<Day>) {
   }
 
   await writeFile(outputPath, JSON.stringify({week, total}, null, 2))
+
+  return outputPath
 }

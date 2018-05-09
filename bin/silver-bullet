@@ -16,6 +16,7 @@ const { help } = minimist(
 if (help) {
   console.log([
     'usage: silver-bullet [options]',
+    'Without options the time tracking file will be opened for editing.',
     '',
     'options:',
     '  -c --config  Path to the config file. [~/.silver-bullet.json]',

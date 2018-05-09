@@ -10,7 +10,7 @@ const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
 let _config: Config
 
-const {config: configPath, preview} = minimist(process.argv.slice(2), {
+const {config: configPath, preview} = minimist(process.argv, {
   alias: {
     c: 'config',
     p: 'preview',
@@ -22,9 +22,19 @@ const {config: configPath, preview} = minimist(process.argv.slice(2), {
 })
 
 const defaultConfig: Config = {
+  editor: getCommandLine(),
+  showAfterPreview: true,
   path: Path.join(homedir(), 'time.txt'),
   mappings: {},
   preview,
+}
+
+function getCommandLine() {
+  switch (process.platform) {
+    case 'darwin': return 'open'
+    case 'win32': return 'start'
+    default: return 'xdg-open'
+  }
 }
 
 /**
