@@ -12,9 +12,13 @@
     "lint": "tslint --project tsconfig.json --fix --format codeFrame",
     "mocha": "NODE_ENV=test mocha --opts mocha.opts",
     "prestart": "yarn build",
-    "start": "node ./dist/index.js",
+    "start": "node ./bin/silver-bullet",
     "test": "yarn lint && yarn mocha"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "devDependencies": {
     "@types/chai": "^4.1.2",
     "@types/minimist": "^1.2.0",

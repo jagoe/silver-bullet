@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const SilverBullet = require('../dist')
+const minimist = require('minimist')
+
+const { help } = minimist(
+  process.argv, {
+    alias: {
+      h: 'help',
+    },
+  }
+)
+
+if (help) {
+  console.log([
+    'usage: silver-bullet [options]',
+    '',
+    'options:',
+    '  -c --config  Path to the config file. [~/.silver-bullet.json]',
+    '  -p --preview Add this flag to show a preview of the time data next to the input file instead of submitting.' +
+    ' Optionally supply the output file path.',
+    '  -h --help    Print this list and exit.'
+  ].join('\n'));
+  process.exit();
+}
+
+(async () => {
+  try {
+    await SilverBullet.start()
+  } catch (error) {
+    console.error(error.message)
+  }
+})()

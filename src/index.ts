@@ -7,7 +7,7 @@ import {Day, parse} from './parser'
 const exists = promisify(fs.exists)
 const writeFile = promisify(fs.writeFile)
 
-async function start() {
+export async function start() {
   const config = await loadConfig()
   const week = await parse()
 
@@ -31,7 +31,3 @@ async function print(config: Config, week: Array<Day>) {
 
   await writeFile(outputPath, JSON.stringify({week, total}, null, 2))
 }
-
-(async () => {
-  await start()
-})()
