@@ -45,7 +45,7 @@ function parseDay(match: RegExpExecArray, config: Config): Day {
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
-  let entries = loopRegex(entryPattern, entryBlock, m => parseEntry(m, config))
+  let entries = loopRegex(entryPattern, entryBlock, m => parseEntry(m, date, config))
 
   validateTimeline(entries)
   entries = combine(entries)
@@ -58,11 +58,11 @@ function parseDay(match: RegExpExecArray, config: Config): Day {
   }
 }
 
-function parseEntry(match: RegExpExecArray, config: Config): Entry {
+function parseEntry(match: RegExpExecArray, date: Date, config: Config): Entry {
   const raw = match[0]
 
-  const start = getTimeOfDay(match[1], match[2])
-  const end = getTimeOfDay(match[3], match[4])
+  const start = getTimeOfDay(date, match[1], match[2])
+  const end = getTimeOfDay(date, match[3], match[4])
   const duration = (end.getHours() - start.getHours()) + (end.getMinutes() - start.getMinutes()) / 60
 
   const text = match[5].split(':')
@@ -85,7 +85,7 @@ function parseEntry(match: RegExpExecArray, config: Config): Entry {
     end,
     duration,
     package: entryPackage,
-    comment,
+    comment: comment.trim(),
     raw,
   }
 }
@@ -139,12 +139,11 @@ function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray
   return entries
 }
 
-function getTimeOfDay(hour: string, minute: string) {
-  const now = new Date()
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-  const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+function getTimeOfDay(date: Date, hour: string, minute: string) {
+  // date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+  date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 
-  today.setUTCHours(parseInt(hour, 10), parseInt(minute, 10))
+  date.setUTCHours(parseInt(hour, 10), parseInt(minute, 10))
 
-  return today
+  return date
 }
