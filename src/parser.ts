@@ -6,8 +6,6 @@ import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
-const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.|\s)+?)(\r?\n){2}/g
-const entryPattern = /(\d\d):(\d\d).+?(\d\d):(\d\d) (.+)/g
 
 export interface Entry {
   start: Date,
@@ -24,6 +22,7 @@ export interface Day {
   total: number,
 }
 
+const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.|\s)+?)(\r?\n){2}/g
 export async function parse() {
   const config = await loadConfig()
   const {path} = config
@@ -39,6 +38,7 @@ export async function parse() {
   return days
 }
 
+const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g
 function parseDay(match: RegExpExecArray, config: Config): Day {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)
@@ -140,7 +140,6 @@ function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray
 }
 
 function getTimeOfDay(date: Date, hour: string, minute: string) {
-  // date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
   date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 
   date.setUTCHours(parseInt(hour, 10), parseInt(minute, 10))
