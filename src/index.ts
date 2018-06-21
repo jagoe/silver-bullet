@@ -14,7 +14,12 @@ const argv = minimist(process.argv)
 export async function start() {
   const config = await loadConfig()
   if (Object.keys(argv).length === 1) {
+    // no arguments - open tracker
     exec(`${config.editor} ${config.path}`)
+    return
+  }
+  if (config.editConfig) {
+    exec(`${config.editor} ${config.configPath}`)
     return
   }
 

@@ -10,14 +10,16 @@ const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
 let _config: Config
 
-const {config: configPath, preview} = minimist(process.argv, {
+const {config: configPath, edit: editConfig, preview} = minimist(process.argv, {
   alias: {
     c: 'config',
+    e: 'edit',
     p: 'preview',
   },
   default: {
     c: Path.join(homedir(), '.silverbullet.json'),
     p: false,
+    e: false,
   },
 })
 
@@ -27,6 +29,8 @@ const defaultConfig: Config = {
   path: Path.join(homedir(), 'time.txt'),
   mappings: {},
   preview,
+  editConfig,
+  configPath,
 }
 
 function getCommandLine() {
