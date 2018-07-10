@@ -22,7 +22,7 @@ export interface Day {
   total: number,
 }
 
-const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.|\s)+?)(\r?\n){2}/g
+const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
 export async function parse() {
   const config = await loadConfig()
   const {path} = config
