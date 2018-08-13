@@ -9,15 +9,21 @@ export default interface Config {
   export: boolean
   editConfig: boolean
   configPath: boolean
-  projectileCredentials?: {
-    basic?: {
-      username: string
-      password: string,
+  projectile?: {
+    api: {
+      host: string,
+      port: number,
     },
-    pass?: {
-      name: string
-      usernameLine: number
-      passwordLine: number,
+    credentials?: {
+      basic?: {
+        username: string
+        password: string,
+      },
+      pass?: {
+        name: string
+        usernameLine: number
+        passwordLine: number,
+      },
     },
   }
 }

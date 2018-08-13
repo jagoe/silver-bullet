@@ -5,22 +5,29 @@ import Config from '../models/config'
 import {Day, Entry} from '../parser'
 
 export async function exportProjectile(config: Config, week: Array<Day>) {
-  const token = await login(config)
+  if (!config.projectile) {
+    console.log('Projectile API configuration missing!')
+    process.exit(1)
+  }
+
+  const uri = `${config.projectile!.api.host}:${config.projectile!.api.port}`
+  const credentials = await getCredentials(config)
+
+  const token = await login(uri, credentials)
 
   for (const day of week) {
     for (const entry of day.entries) {
-      await saveEntry(token, entry)
+      await saveEntry(uri, token, entry)
     }
   }
 }
 
-async function login(config: Config) {
-  // credentials
+async function getCredentials(config: Config) {
   let username: string = ''
   let password: string = ''
 
-  if (config.projectileCredentials) {
-    const {basic, pass} = config.projectileCredentials
+  if (config.projectile && config.projectile.credentials) {
+    const {basic, pass} = config.projectile.credentials
     if (basic) {
       username = basic.username
       password = basic.password
@@ -38,22 +45,23 @@ async function login(config: Config) {
   if (!username || !password) {
     console.log(
       'Please provide username and password using any of the following methods:\n' +
-      '1) via the config path projectileCredentials.basic' +
-      '2) via the config path projectileCredentials.pass and the password management tool pass' +
+      '1) via the config path projectile.credentials.basic' +
+      '2) via the config path projectile.credentials.pass and the password management tool pass' +
       '3) via environment variables PROJECTILE_USERNAME & PROJECTILE_PASSWORD' +
       '4) by entering username and password when prompted',
     )
     process.exit(1)
   }
 
+  return {username, password}
+}
+
+async function login(uri: string, credentials: any) {
   const result = await request({
-    uri: 'http://localhost:3000/api/v1/login',
+    uri: `${uri}/api/v1/login`,
     method: 'POST',
     json: true,
-    body: {
-      username,
-      password,
-    },
+    body: credentials,
     headers: {
       cacheControl: 'no-cache',
       contentType: 'application/x-www-form-urlencoded',
@@ -67,7 +75,7 @@ async function login(config: Config) {
   return result.token
 }
 
-async function saveEntry(token: string, entry: Entry) {
+async function saveEntry(uri: string, token: string, entry: Entry) {
   const projectileEntry = {
     date: entry.start.toISOString().substr(0, 10),
     duration: entry.duration,
@@ -77,7 +85,7 @@ async function saveEntry(token: string, entry: Entry) {
 
   try {
     await request({
-      uri: 'http://localhost:3000/api/v1/book',
+      uri: `${uri}/api/v1/book`,
       method: 'POST',
       json: true,
       body: projectileEntry,
