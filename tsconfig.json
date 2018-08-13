@@ -8,7 +8,7 @@
     "sourceMap": false,
     "declaration": true,
     "lib": [
-      "es2017"
+      "es2017",
     ],
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
@@ -21,15 +21,6 @@
     "experimentalDecorators": true,
     "newLine": "LF",
     "moduleResolution": "node",
-    "typeRoots": [
-      "node_modules/@types",
-      "node_modules/reflect-metadata"
-    ],
-    "types": [
-      "mocha",
-      "chai",
-      "node"
-    ]
   },
   "exclude": [
     "node_modules",

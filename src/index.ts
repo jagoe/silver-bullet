@@ -1,23 +1,23 @@
 import {exec} from 'child_process'
-import * as fs from 'fs'
 import * as minimist from 'minimist'
-import {promisify} from 'util'
 import {load as loadConfig} from './config'
-import Config from './models/config'
-import {Day, parse} from './parser'
-
-const exists = promisify(fs.exists)
-const writeFile = promisify(fs.writeFile)
+import {exportJSON} from './exporters/json'
+import {exportProjectile} from './exporters/projectile'
+import {parse} from './parser'
 
 const argv = minimist(process.argv)
 
 export async function start() {
   const config = await loadConfig()
+
+  // tracking mode
   if (Object.keys(argv).length === 1) {
     // no arguments - open tracker
     exec(`${config.editor} ${config.path}`)
     return
   }
+
+  // edit mode
   if (config.editConfig) {
     exec(`${config.editor} ${config.configPath}`)
     return
@@ -25,26 +25,14 @@ export async function start() {
 
   const week = await parse()
 
+  // preview mode
   if (config.preview) {
-    const path = await print(config, week)
+    const path = await exportJSON(config, week)
     exec(`${config.editor} ${path}`)
-  }
-}
-
-async function print(config: Config, week: Array<Day>) {
-  const total = week.reduce((sum, day) => sum + day.total, 0)
-  let outputPath
-
-  if (typeof config.preview === 'string' && await exists(config.preview)) {
-    outputPath = config.preview
-  } else {
-    const file = config.path.slice(0, config.path.lastIndexOf('.'))
-    const ext = '.json'
-
-    outputPath = `${file}_parsed${ext}`
+    return
   }
 
-  await writeFile(outputPath, JSON.stringify({week, total}, null, 2))
-
-  return outputPath
+  if (config.export) {
+    await exportProjectile(config, week)
+  }
 }
