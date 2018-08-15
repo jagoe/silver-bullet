@@ -2,28 +2,31 @@ import Mapping from './mapping'
 
 export default interface Config {
   editor: string
+  configPath: string
   path: string
-  showAfterPreview: boolean
   mappings: {[key: string]: Mapping}
-  preview: boolean | string
-  export: boolean
-  editConfig: boolean
-  configPath: boolean
   projectile?: {
     api: {
-      host: string,
+      host: string
       port: number,
-    },
+    }
     credentials?: {
       basic?: {
         username: string
         password: string,
-      },
+      }
       pass?: {
         name: string
         usernameLine: number
         passwordLine: number,
       },
     },
+  }
+  modes: {
+    preview: boolean | string
+    showAfterPreview: boolean
+    export: boolean
+    latestOnly: boolean
+    editConfig: boolean,
   }
 }

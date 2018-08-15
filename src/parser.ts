@@ -23,7 +23,7 @@ export interface Day {
 }
 
 const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
-export async function parse() {
+export async function parse(latestOnly: boolean) {
   const config = await loadConfig()
   const {path} = config
 
@@ -35,7 +35,7 @@ export async function parse() {
 
   const days = loopRegex(dayPattern, fileContent, m => parseDay(m, config))
 
-  return days
+  return latestOnly ? [days[days.length - 1]] : days
 }
 
 const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g

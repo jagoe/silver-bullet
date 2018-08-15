@@ -18,21 +18,21 @@ export async function start() {
   }
 
   // edit mode
-  if (config.editConfig) {
+  if (config.modes.editConfig) {
     exec(`${config.editor} ${config.configPath}`)
     return
   }
 
-  const week = await parse()
+  const week = await parse(config.modes.latestOnly)
 
   // preview mode
-  if (config.preview) {
+  if (config.modes.preview) {
     const path = await exportJSON(config, week)
     exec(`${config.editor} ${path}`)
     return
   }
 
-  if (config.export) {
+  if (config.modes.export) {
     await exportProjectile(config, week)
   }
 }
