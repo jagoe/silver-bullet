@@ -1,31 +1,34 @@
 import * as fs from 'fs'
 import * as Path from 'path'
+import * as request from 'request-promise-native'
 import {promisify} from 'util'
-import {load as loadConfig} from './config'
+import getCredentials from './lib/getCredentials'
 import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
 
 export interface Entry {
-  start: Date,
-  end: Date,
-  duration: number,
-  package: string,
-  comment: string,
+  start: Date
+  end: Date
+  duration: number
+  package: string
+  comment: string
+  ticketSummary?: string
   raw?: string
 }
 
 export interface Day {
-  weekday: number,
-  entries: Array<Entry>,
-  total: number,
+  weekday: number
+  entries: Array<Entry>
+  total: number
 }
 
 const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
-export async function parse(latestOnly: boolean) {
-  const config = await loadConfig()
+export async function parse(config: Config) {
   const {path} = config
+  const {latestOnly} = config.modes
+  const jiraCredentials = await getCredentials(config.jira && config.jira.credentials)
 
   if (!await exists(path)) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
@@ -33,19 +36,23 @@ export async function parse(latestOnly: boolean) {
 
   const fileContent = (await readFile(path)).toString()
 
-  const days = loopRegex(dayPattern, fileContent, m => parseDay(m, config))
+  const days = await loopRegex(dayPattern, fileContent, async (m) => await parseDay(m, config, jiraCredentials))
 
   return latestOnly ? [days[days.length - 1]] : days
 }
 
 const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g
-function parseDay(match: RegExpExecArray, config: Config): Day {
+async function parseDay(match: RegExpExecArray, config: Config, jiraCredentials: any): Promise<Day> {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
-  let entries = loopRegex(entryPattern, entryBlock, m => parseEntry(m, date, config))
+  let entries = await loopRegex(
+    entryPattern,
+    entryBlock,
+    async (m) => await parseEntry(m, date, config, jiraCredentials),
+  )
 
   validateTimeline(entries)
   entries = combine(entries)
@@ -58,7 +65,7 @@ function parseDay(match: RegExpExecArray, config: Config): Day {
   }
 }
 
-function parseEntry(match: RegExpExecArray, date: Date, config: Config): Entry {
+async function parseEntry(match: RegExpExecArray, date: Date, config: Config, jiraCredentials: any): Promise<Entry> {
   const raw = match[0]
 
   const start = getTimeOfDay(date, match[1], match[2])
@@ -67,6 +74,7 @@ function parseEntry(match: RegExpExecArray, date: Date, config: Config): Entry {
 
   const text = match[5].split(':')
   const shorthand = text[0]
+  let ticketSummary: string | undefined
 
   const configEntry = config.mappings[shorthand]
   if (!configEntry) {
@@ -80,12 +88,18 @@ function parseEntry(match: RegExpExecArray, date: Date, config: Config): Entry {
     throw new Error(`Comment missing for entry ${raw}`)
   }
 
+  if (config.jira) {
+    ticketSummary =
+      await getTicketSummary(config.jira.restUri, jiraCredentials, config.jira.ticketPatterns, comment)
+  }
+
   return {
     start,
     end,
     duration,
     package: entryPackage,
     comment: comment.trim(),
+    ticketSummary,
     raw,
   }
 }
@@ -123,8 +137,8 @@ function combine(entries: Array<Entry>) {
   return Object.values(combined)
 }
 
-function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray) => T) {
-  const entries: Array<T> = []
+async function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray) => Promise<T>) {
+  const entries: Array<Promise<T>> = []
   let match: RegExpExecArray | null
 
   do {
@@ -136,7 +150,7 @@ function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray
     entries.push(fn(match))
   } while (match)
 
-  return entries
+  return await Promise.all(entries)
 }
 
 function getTimeOfDay(date: Date, hour: string, minute: string) {
@@ -145,4 +159,39 @@ function getTimeOfDay(date: Date, hour: string, minute: string) {
   date.setUTCHours(parseInt(hour, 10), parseInt(minute, 10))
 
   return date
+}
+
+async function getTicketSummary(
+  uri: string,
+  credentials: any,
+  patterns: Array<string>,
+  comment: string,
+): Promise<string | undefined> {
+  const basicAuth = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')
+  const ticketPatterns = patterns.map(pattern => new RegExp(pattern))
+
+  let match: RegExpExecArray | null = null
+  for (let i = 0; i < ticketPatterns.length && match === null; i++) {
+    match = ticketPatterns[i].exec(comment)
+  }
+
+  const ticketNr = match && match[0]
+
+  if (!ticketNr) {
+    return
+  }
+
+  const ticket = await request({
+    uri: `${uri}/agile/1.0/issue/${ticketNr}?fields=summary,issuetype,parent`,
+    method: 'GET',
+    json: true,
+    headers: {
+      authorization: `Basic ${basicAuth}`,
+      contentType: 'application/json',
+    },
+  })
+
+  return ticket.fields.issuetype.name === 'Story'
+    ? ticket.fields.summary
+    : ticket.fields.parent.fields.summary
 }

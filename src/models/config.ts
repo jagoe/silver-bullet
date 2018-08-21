@@ -1,3 +1,4 @@
+import CredentialSettings from './credentialSettings'
 import Mapping from './mapping'
 
 export default interface Config {
@@ -10,17 +11,12 @@ export default interface Config {
       host: string
       port: number,
     }
-    credentials?: {
-      basic?: {
-        username: string
-        password: string,
-      }
-      pass?: {
-        name: string
-        usernameLine: number
-        passwordLine: number,
-      },
-    },
+    credentials: CredentialSettings,
+  }
+  jira?: {
+    restUri: string
+    credentials: CredentialSettings
+    ticketPatterns: Array<string>,
   }
   modes: {
     preview: boolean | string

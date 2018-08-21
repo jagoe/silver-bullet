@@ -23,7 +23,7 @@ export async function start() {
     return
   }
 
-  const week = await parse(config.modes.latestOnly)
+  const week = await parse(config)
 
   // preview mode
   if (config.modes.preview) {

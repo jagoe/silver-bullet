@@ -1,6 +1,5 @@
 import * as request from 'request-promise-native'
-import {getFromPass} from '../lib/getFromPass'
-import {getInput} from '../lib/getInput'
+import getCredentials from '../lib/getCredentials'
 import Config from '../models/config'
 import {Day, Entry} from '../parser'
 
@@ -11,7 +10,7 @@ export async function exportProjectile(config: Config, week: Array<Day>) {
   }
 
   const uri = `${config.projectile!.api.host}:${config.projectile!.api.port}`
-  const credentials = await getCredentials(config)
+  const credentials = await getCredentials(config.projectile && config.projectile.credentials)
 
   const token = await login(uri, credentials)
 
@@ -20,40 +19,6 @@ export async function exportProjectile(config: Config, week: Array<Day>) {
       await saveEntry(uri, token, entry)
     }
   }
-}
-
-async function getCredentials(config: Config) {
-  let username: string = ''
-  let password: string = ''
-
-  if (config.projectile && config.projectile.credentials) {
-    const {basic, pass} = config.projectile.credentials
-    if (basic) {
-      username = basic.username
-      password = basic.password
-    } else if (pass) {
-      username = await getFromPass(pass.name, pass.usernameLine)
-      password = await getFromPass(pass.name, pass.passwordLine)
-    }
-  } else {
-    username = process.env.PROJECTILE_USERNAME
-      || await getInput('Username')
-    password = process.env.PROJECTILE_PASSWORD
-      || await getInput('Password', true)
-  }
-
-  if (!username || !password) {
-    console.log(
-      'Please provide username and password using any of the following methods:\n' +
-      '1) via the config path projectile.credentials.basic' +
-      '2) via the config path projectile.credentials.pass and the password management tool pass' +
-      '3) via environment variables PROJECTILE_USERNAME & PROJECTILE_PASSWORD' +
-      '4) by entering username and password when prompted',
-    )
-    process.exit(1)
-  }
-
-  return {username, password}
 }
 
 async function login(uri: string, credentials: any) {
@@ -80,7 +45,7 @@ async function saveEntry(uri: string, token: string, entry: Entry) {
     date: entry.start.toISOString().substr(0, 10),
     duration: entry.duration,
     activity: entry.package,
-    note: entry.comment,
+    note: entry.ticketSummary ? `${entry.comment} (${entry.ticketSummary})` : entry.comment,
   }
 
   try {
