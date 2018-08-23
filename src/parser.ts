@@ -28,7 +28,7 @@ const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
 export async function parse(config: Config) {
   const {path} = config
   const {latestOnly} = config.modes
-  const jiraCredentials = await getCredentials(config.jira && config.jira.credentials)
+  const jiraCredentials = config.jira && await getCredentials(config.jira && config.jira.credentials)
 
   if (!await exists(path)) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
@@ -191,7 +191,15 @@ async function getTicketSummary(
     },
   })
 
-  return ticket.fields.issuetype.name === 'Story'
-    ? ticket.fields.summary
-    : ticket.fields.parent.fields.summary
+  if (!ticket) {
+    return
+  }
+
+  if (ticket.fields.issuetype.name === 'Story') {
+    return ticket.fields.summary
+  }
+
+  if (ticket.fields.parent) {
+    return ticket.fields.parent.fields.summary
+  }
 }
