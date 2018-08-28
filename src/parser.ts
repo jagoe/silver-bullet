@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as Path from 'path'
-import * as request from 'request-promise-native'
 import {promisify} from 'util'
 import getCredentials from './lib/getCredentials'
+import {getTicketSummary} from './lib/jira'
 import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
@@ -159,47 +159,4 @@ function getTimeOfDay(date: Date, hour: string, minute: string) {
   date.setUTCHours(parseInt(hour, 10), parseInt(minute, 10))
 
   return date
-}
-
-async function getTicketSummary(
-  uri: string,
-  credentials: any,
-  patterns: Array<string>,
-  comment: string,
-): Promise<string | undefined> {
-  const basicAuth = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64')
-  const ticketPatterns = patterns.map(pattern => new RegExp(pattern))
-
-  let match: RegExpExecArray | null = null
-  for (let i = 0; i < ticketPatterns.length && match === null; i++) {
-    match = ticketPatterns[i].exec(comment)
-  }
-
-  const ticketNr = match && match[0]
-
-  if (!ticketNr) {
-    return
-  }
-
-  const ticket = await request({
-    uri: `${uri}/agile/1.0/issue/${ticketNr}?fields=summary,issuetype,parent`,
-    method: 'GET',
-    json: true,
-    headers: {
-      authorization: `Basic ${basicAuth}`,
-      contentType: 'application/json',
-    },
-  })
-
-  if (!ticket) {
-    return
-  }
-
-  if (ticket.fields.issuetype.name === 'Story') {
-    return ticket.fields.summary
-  }
-
-  if (ticket.fields.parent) {
-    return ticket.fields.parent.fields.summary
-  }
 }
