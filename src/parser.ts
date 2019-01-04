@@ -15,28 +15,30 @@ export interface Entry {
   package: string
   comment: string
   ticketSummary?: string
+  summary: string
   raw?: string
 }
 
 export interface Day {
+  date: string
   weekday: number
   entries: Array<Entry>
   total: number
 }
 
-const dayPattern = /(?:\w{2})\/(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
+const dayPattern = /(?:\w+\/)?(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
 export async function parse(config: Config) {
   const {path} = config
   const {latestOnly} = config.modes
-  const jiraCredentials = config.jira && await getCredentials(config.jira && config.jira.credentials)
+  const jiraCredentials = config.jira && (await getCredentials(config.jira && config.jira.credentials))
 
-  if (!await exists(path)) {
+  if (!(await exists(path))) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
   }
 
   const fileContent = (await readFile(path)).toString()
 
-  const days = await loopRegex(dayPattern, fileContent, async (m) => await parseDay(m, config, jiraCredentials))
+  const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config, jiraCredentials))
 
   return latestOnly ? [days[days.length - 1]] : days
 }
@@ -48,11 +50,7 @@ async function parseDay(match: RegExpExecArray, config: Config, jiraCredentials:
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
-  let entries = await loopRegex(
-    entryPattern,
-    entryBlock,
-    async (m) => await parseEntry(m, date, config, jiraCredentials),
-  )
+  let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config, jiraCredentials))
 
   validateTimeline(entries)
   entries = combine(entries)
@@ -60,8 +58,11 @@ async function parseDay(match: RegExpExecArray, config: Config, jiraCredentials:
 
   return {
     weekday: date.getDay(),
+    date: date.toISOString().substr(0, 10),
     entries,
-    get total() {return entries.reduce((sum, e) => sum + e.duration, 0)},
+    get total() {
+      return entries.reduce((sum, e) => sum + e.duration, 0)
+    },
   }
 }
 
@@ -70,7 +71,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config, ji
 
   const start = getTimeOfDay(date, match[1], match[2])
   const end = getTimeOfDay(date, match[3], match[4])
-  const duration = (end.getHours() - start.getHours()) + (end.getMinutes() - start.getMinutes()) / 60
+  const duration = end.getHours() - start.getHours() + (end.getMinutes() - start.getMinutes()) / 60
 
   const text = match[5].split(':')
   const shorthand = text[0]
@@ -83,14 +84,14 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config, ji
 
   const entryPackage = `${configEntry.projectNr}-${configEntry.packageNr}`
 
-  const comment = text[1] || configEntry.comment
+  let comment = text[1] || configEntry.comment
   if (!comment) {
     throw new Error(`Comment missing for entry ${raw}`)
   }
+  comment = comment.trim()
 
   if (config.jira) {
-    ticketSummary =
-      await getTicketSummary(config.jira.restUri, jiraCredentials, config.jira.ticketPatterns, comment)
+    ticketSummary = await getTicketSummary(config.jira.restUri, jiraCredentials, config.jira.ticketPatterns, comment)
   }
 
   return {
@@ -98,8 +99,9 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config, ji
     end,
     duration,
     package: entryPackage,
-    comment: comment.trim(),
+    comment,
     ticketSummary,
+    summary: ticketSummary ? `${comment} (${ticketSummary})` : comment,
     raw,
   }
 }

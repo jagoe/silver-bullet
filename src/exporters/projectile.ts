@@ -45,7 +45,7 @@ async function saveEntry(uri: string, token: string, entry: Entry) {
     date: entry.start.toISOString().substr(0, 10),
     duration: entry.duration,
     activity: entry.package,
-    note: entry.ticketSummary ? `${entry.comment} (${entry.ticketSummary})` : entry.comment,
+    note: entry.summary,
   }
 
   try {
