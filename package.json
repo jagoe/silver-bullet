@@ -14,7 +14,7 @@
     "prestart": "yarn build",
     "start": "node ./bin/silverbullet",
     "test": "yarn lint && yarn mocha",
-    "predeploy": "yarn build",
+    "predeploy": "NODE_ENV=production yarn build",
     "deploy": "cp -fru -t ~/bin/_silverbullet bin dist node_modules"
   },
   "files": [
