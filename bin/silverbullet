@@ -1,35 +1,36 @@
 #!/usr/bin/env node
 
-'use strict';
+'use strict'
 
 const SilverBullet = require('../dist')
 const minimist = require('minimist')
 
-const {help} = minimist(
-  process.argv, {
-    alias: {
-      h: 'help',
-    },
-  }
-)
+const {help} = minimist(process.argv, {
+  alias: {
+    h: 'help',
+  },
+})
 
 if (help) {
-  console.log([
-    'usage: silverbullet [options]',
-    'Without options the time tracking file will be opened for editing.',
-    '',
-    'options:',
-    '  -c --config  Path to the config file. [~/.silverbullet.json]',
-    '  -p --preview Add this flag to show a preview of the time data next to the input file instead of submitting.' +
-    ' Optionally supply the output file path.',
-    '  -x --export  Add this flag to export all tracked data to Projectile using the configuration',
-    '  -l --latest  Add this flag to export or preview the latest entry only',
-    '  -h --help    Print this list and exit.'
-  ].join('\n'));
-  process.exit();
+  console.log(
+    [
+      'usage: silverbullet [options]',
+      'Without options the time tracking file will be opened for editing.',
+      '',
+      'options:',
+      '  -c --config  Path to the config file. [~/.silverbullet.json]',
+      '  -p --preview Add this flag to show a preview of the time data next to the input file instead of submitting.' +
+        ' Optionally supply the output file path.',
+      '  -x --export  Add this flag to export all tracked data to Projectile using the configuration.',
+      '  -l --latest  Add this flag to export or preview the latest entry only.',
+      '  -h --help    Print this list and exit.',
+    ].join('\n')
+  )
+
+  process.exit()
 }
 
-(async () => {
+;(async () => {
   try {
     await SilverBullet.start()
   } catch (error) {
