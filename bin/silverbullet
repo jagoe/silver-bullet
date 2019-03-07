@@ -19,12 +19,13 @@ if (help) {
       '',
       'options:',
       '  -c --config  Path to the config file. [~/.silverbullet.json]',
+      ' -e, --edit: Open the config file in the editor specified in the config file.',
       '  -p --preview Add this flag to show a preview of the time data next to the input file instead of submitting.' +
         ' Optionally supply the output file path.',
       '  -x --export  Add this flag to export all tracked data to Projectile using the configuration.',
       '  -l --latest  Add this flag to export or preview the latest entry only.',
       '  -h --help    Print this list and exit.',
-    ].join('\n')
+    ].join('\n'),
   )
 
   process.exit()

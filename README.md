@@ -154,6 +154,7 @@ Without options the time tracking file will be opened for editing.
 Options:
 
 * `-c`, `--config`: Path to the config file. [~/.silverbullet.json]
+* `-e`, `--edit`: Open the config file in the editor specified in the config file.
 * `-p`, `--preview`: Add this flag to show a preview of the time data next to the input file instead of submitting.
                      Optionally supply the output file path, which defaults to adding `_parsed` to the tracking file
                      name.
