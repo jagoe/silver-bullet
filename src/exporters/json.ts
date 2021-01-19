@@ -10,7 +10,7 @@ export async function exportJSON(config: Config, week: Array<Day>) {
   const total = week.reduce((sum, day) => sum + day.total, 0)
   let outputPath
 
-  if (typeof config.modes.preview === 'string' && await exists(config.modes.preview)) {
+  if (typeof config.modes.preview === 'string' && (await exists(config.modes.preview))) {
     outputPath = config.modes.preview
   } else {
     const file = config.path.slice(0, config.path.lastIndexOf('.'))

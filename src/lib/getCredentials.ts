@@ -23,9 +23,9 @@ export default async function getCredentials(credentialSection?: CredentialSetti
   if (!username || !password) {
     console.log(
       'Please provide username and password using any of the following methods:\n' +
-      '1) via the config path xyz.credentials.basic\n' +
-      '2) via the config path xyz.credentials.pass and the password management tool pass\n' +
-      '3) by entering username and password when prompted\n',
+        '1) via the config path xyz.credentials.basic\n' +
+        '2) via the config path xyz.credentials.pass and the password management tool pass\n' +
+        '3) by entering username and password when prompted\n',
     )
     process.exit(1)
   }

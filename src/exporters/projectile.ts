@@ -1,8 +1,8 @@
 import * as request from 'request-promise-native'
-import { inspect } from 'util'
+import {inspect} from 'util'
 import getCredentials from '../lib/getCredentials'
 import Config from '../models/config'
-import { Day, Entry } from '../parser'
+import {Day, Entry} from '../parser'
 
 export async function exportProjectile(config: Config, week: Array<Day>) {
   if (!config.projectile) {
@@ -11,9 +11,7 @@ export async function exportProjectile(config: Config, week: Array<Day>) {
   }
 
   const uri = `${config.projectile!.api.host}:${config.projectile!.api.port}`
-  const credentials = await getCredentials(
-    config.projectile && config.projectile.credentials,
-  )
+  const credentials = await getCredentials(config.projectile && config.projectile.credentials)
 
   const token = await login(uri, credentials)
 

@@ -30,7 +30,6 @@ const dayPattern = /(?:\w+\/)?(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
 export async function parse(config: Config) {
   const {path} = config
   const {latestOnly} = config.modes
-  const jiraCredentials = config.jira && (await getCredentials(config.jira && config.jira.credentials))
 
   if (!(await exists(path))) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
@@ -38,19 +37,19 @@ export async function parse(config: Config) {
 
   const fileContent = (await readFile(path)).toString()
 
-  const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config, jiraCredentials))
+  const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config))
 
   return latestOnly ? [days[days.length - 1]] : days
 }
 
 const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g
-async function parseDay(match: RegExpExecArray, config: Config, jiraCredentials: any): Promise<Day> {
+async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
-  let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config, jiraCredentials))
+  let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config))
 
   validateTimeline(entries)
   entries = combine(entries)
@@ -66,7 +65,7 @@ async function parseDay(match: RegExpExecArray, config: Config, jiraCredentials:
   }
 }
 
-async function parseEntry(match: RegExpExecArray, date: Date, config: Config, jiraCredentials: any): Promise<Entry> {
+async function parseEntry(match: RegExpExecArray, date: Date, config: Config): Promise<Entry> {
   const raw = match[0]
 
   const start = getTimeOfDay(date, match[1], match[2])
@@ -90,8 +89,15 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config, ji
   }
   comment = comment.trim()
 
-  if (config.jira) {
-    ticketSummary = await getTicketSummary(config.jira.restUri, jiraCredentials, config.jira.ticketPatterns, comment)
+  if (config.jira && config.jira.length) {
+    const credentialConfigs = await Promise.all(
+      config.jira.map(async c => ({
+        restUri: c.restUri,
+        ticketPatterns: c.ticketPatterns,
+        credentials: await getCredentials(c.credentials),
+      })),
+    )
+    ticketSummary = await getTicketSummary(credentialConfigs, comment)
   }
 
   return {

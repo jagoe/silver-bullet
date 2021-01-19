@@ -43,9 +43,12 @@ const defaultConfig: Config = {
 
 function getCommandLine() {
   switch (process.platform) {
-    case 'darwin': return 'open'
-    case 'win32': return 'start'
-    default: return 'xdg-open'
+    case 'darwin':
+      return 'open'
+    case 'win32':
+      return 'start'
+    default:
+      return 'xdg-open'
   }
 }
 
@@ -73,7 +76,7 @@ export async function load() {
 }
 
 async function readConfig(path: string) {
-  if (!await exists(path)) {
+  if (!(await exists(path))) {
     return null
   }
 

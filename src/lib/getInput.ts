@@ -23,11 +23,16 @@ export async function getInput(prompt: string, mask: boolean = false) {
           return resolve(input)
         case BACKSPACE:
           // Backspace
-          input = input.slice(0, -1);
-          (process.stdout as any).clearLine();
-          (process.stdout as any).cursorTo(0)
+          input = input.slice(0, -1)
+          ;(process.stdout as any).clearLine()
+          ;(process.stdout as any).cursorTo(0)
           process.stdout.write(`${prompt}: `)
-          process.stdout.write(input.split('').map(() => mask ? '*' : ch).join(''))
+          process.stdout.write(
+            input
+              .split('')
+              .map(() => (mask ? '*' : ch))
+              .join(''),
+          )
           break
         case '\u0003':
           // Ctrl-C
