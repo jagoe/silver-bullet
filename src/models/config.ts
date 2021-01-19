@@ -1,4 +1,5 @@
 import CredentialSettings from './credentialSettings'
+import {JiraConfig} from './jiraConfig'
 import Mapping from './mapping'
 
 export default interface Config {
@@ -13,11 +14,7 @@ export default interface Config {
     }
     credentials: CredentialSettings,
   }
-  jira?: {
-    restUri: string
-    credentials: CredentialSettings
-    ticketPatterns: Array<string>,
-  }
+  jira?: Array<JiraConfig>
   modes: {
     preview: boolean | string
     showAfterPreview: boolean

@@ -2,14 +2,14 @@
 
 A projectile booking tool
 
-* [Silver Bullet](#silver-bullet)
-  * [Installation](#installation)
-  * [Configuration](#configuration)
-    * [Explanation](#explanation)
-  * [Time Tracking](#time-tracking)
-    * [Syntax](#syntax)
-    * [Example](#example)
-  * [Usage](#usage)
+- [Silver Bullet](#silver-bullet)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+    - [Explanation](#explanation)
+  - [Time Tracking](#time-tracking)
+    - [Syntax](#syntax)
+    - [Example](#example)
+  - [Usage](#usage)
 
 ## Installation
 
@@ -44,30 +44,32 @@ A projectile booking tool
       }
     }
   },
-  "jira": {
-    "restUri": "https://YOUR_JIRA_URL/rest",
-    "credentials": {
-      "basic": {
-        "username": "USERNAME",
-        "password": "PASSWORD"
+  "jira": [
+    {
+      "restUri": "https://YOUR_JIRA_URL/rest",
+      "credentials": {
+        "basic": {
+          "username": "USERNAME",
+          "password": "PASSWORD"
+        },
+        "pass": {
+          "name": "JIRA",
+          "usernameLine": 2,
+          "passwordLine": 1
+        }
       },
-      "pass": {
-        "name": "JIRA",
-        "usernameLine": 2,
-        "passwordLine": 1
-      }
-    },
-    "ticketPatterns": ["JIRA_KEY-\\d+"]
-  },
+      "ticketPatterns": ["JIRA_KEY-\\d+"]
+    }
+  ],
   "mappings": {
     "Mein Projekt": {
       "projectNr": 12345,
       "packageNr": 123
     },
     "Zeiterfassung": {
-    "projectNr": 2759,
-    "packageNr": 595,
-    "comment": "Zeiterfassung"
+      "projectNr": 2759,
+      "packageNr": 595,
+      "comment": "Zeiterfassung"
     }
   }
 }
@@ -75,33 +77,33 @@ A projectile booking tool
 
 ### Explanation
 
-* `editor`: The editor used to open tracking, preview and to edit the config with
-* `path`: Path of the time tracking file
-* `projectile`: Connection information for the Projectile API
-  * `api`: Location of an instance of the 7val Projectile API
-  * `credentials`: Projectile [credentials](#credentials) (only one is necessary)
-* `jira`: Configuration used for JIRA ticket information extraction
-  * `restUri`: URI of the JIRA REST API
-  * `credentials`: JIRA [credentials](#credentials) (only one is necessary)
-  * `ticketPatterns`: A list of regular expressions that identify ticket numbers in time tracking comments;
-                      used to import summaries of JIRA tasks and stories
-* `mappings`: [Project mappings](#project-mappings)
+- `editor`: The editor used to open tracking, preview and to edit the config with
+- `path`: Path of the time tracking file
+- `projectile`: Connection information for the Projectile API
+  - `api`: Location of an instance of the 7val Projectile API
+  - `credentials`: Projectile [credentials](#credentials) (only one is necessary)
+- `jira`: Configuration used for JIRA ticket information extraction; able to handle multiple JIRA endpoints
+  - `restUri`: URI of the JIRA REST API
+  - `credentials`: JIRA [credentials](#credentials) (only one is necessary)
+  - `ticketPatterns`: A list of regular expressions that identify ticket numbers in time tracking comments;
+    used to import summaries of JIRA tasks and stories
+- `mappings`: [Project mappings](#project-mappings)
 
 #### Credentials
 
-* `basic`: Plain-text credentials
-  * `username`: User name
-  * `password`: Password
-* `pass`: Credential information for the [pass](https://www.passwordstore.org/) password manager
-  * `name`: Password location
-  * `usernameLine`: Line the user name is stored in
-  * `passwordLine`: Line the password is stored in
+- `basic`: Plain-text credentials
+  - `username`: User name
+  - `password`: Password
+- `pass`: Credential information for the [pass](https://www.passwordstore.org/) password manager
+  - `name`: Password location
+  - `usernameLine`: Line the user name is stored in
+  - `passwordLine`: Line the password is stored in
 
 #### Project Mappings
 
-* `projectNr`: The projectile project number
-* `packageNr`: The projectile packate number
-* `comment`: _(optional)_ The default comment
+- `projectNr`: The projectile project number
+- `packageNr`: The projectile packate number
+- `comment`: _(optional)_ The default comment
 
 ## Time Tracking
 
@@ -153,11 +155,11 @@ Without options the time tracking file will be opened for editing.
 
 Options:
 
-* `-c`, `--config`: Path to the config file. [~/.silverbullet.json]
-* `-e`, `--edit`: Open the config file in the editor specified in the config file.
-* `-p`, `--preview`: Add this flag to show a preview of the time data next to the input file instead of submitting.
-                     Optionally supply the output file path, which defaults to adding `_parsed` to the tracking file
-                     name.
-* `-x`, `--export`:  Add this flag to export all tracked data to Projectile using the configuration.
-* `-l`, `--latest`:  Add this flag to export or preview the latest entry only.
-* `-h`, `--help`:    Print this list and exit.
+- `-c`, `--config`: Path to the config file. [~/.silverbullet.json]
+- `-e`, `--edit`: Open the config file in the editor specified in the config file.
+- `-p`, `--preview`: Add this flag to show a preview of the time data next to the input file instead of submitting.
+  Optionally supply the output file path, which defaults to adding `_parsed` to the tracking file
+  name.
+- `-x`, `--export`: Add this flag to export all tracked data to Projectile using the configuration.
+- `-l`, `--latest`: Add this flag to export or preview the latest entry only.
+- `-h`, `--help`: Print this list and exit.
