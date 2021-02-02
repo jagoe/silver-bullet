@@ -1,8 +1,11 @@
 import * as fs from 'fs'
 import * as Path from 'path'
+
+import {getTicketSummary, Ticket} from './lib/jira'
+
 import {promisify} from 'util'
 import getCredentials from './lib/getCredentials'
-import {getTicketSummary} from './lib/jira'
+import {getTickets} from './lib/jira/getTickets'
 import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
@@ -14,7 +17,7 @@ export interface Entry {
   duration: number
   package: string
   comment: string
-  ticketSummary?: string
+  tickets?: Array<Ticket>
   summary: string
   raw?: string
 }
@@ -74,7 +77,6 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   const text = match[5].split(':')
   const shorthand = text[0]
-  let ticketSummary: string | undefined
 
   const configEntry = config.mappings[shorthand]
   if (!configEntry) {
@@ -89,6 +91,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
   }
   comment = comment.trim()
 
+  let tickets: Array<Ticket> | undefined
   if (config.jira && config.jira.length) {
     const credentialConfigs = await Promise.all(
       config.jira.map(async c => ({
@@ -97,7 +100,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
         credentials: await getCredentials(c.credentials),
       })),
     )
-    ticketSummary = await getTicketSummary(credentialConfigs, comment)
+    tickets = await getTickets(credentialConfigs, comment)
   }
 
   return {
@@ -106,8 +109,8 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
     duration,
     package: entryPackage,
     comment,
-    ticketSummary,
-    summary: ticketSummary ? `${comment} (${ticketSummary})` : comment,
+    tickets,
+    summary: tickets ? `${tickets.map(getTicketSummary)}` : comment,
     raw,
   }
 }

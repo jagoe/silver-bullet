@@ -1,8 +1,10 @@
 import * as request from 'request-promise-native'
+
+import {Day, Entry} from '../parser'
+
 import {inspect} from 'util'
 import getCredentials from '../lib/getCredentials'
 import Config from '../models/config'
-import {Day, Entry} from '../parser'
 
 export async function exportProjectile(config: Config, week: Array<Day>) {
   if (!config.projectile) {
