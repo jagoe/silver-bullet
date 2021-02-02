@@ -3,6 +3,7 @@ import CredentialSettings from './credentialSettings'
 interface JiraBaseConfig {
   restUri: string
   ticketPatterns: Array<string>
+  trackTimes?: boolean
 }
 
 export interface JiraConfig extends JiraBaseConfig {
@@ -12,6 +13,6 @@ export interface JiraConfig extends JiraBaseConfig {
 export interface JiraCredentialConfig extends JiraBaseConfig {
   credentials: {
     username: string
-    password: string
+    password: string,
   }
 }

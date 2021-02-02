@@ -20,7 +20,10 @@ export async function exportJSON(config: Config, week: Array<Day>) {
     outputPath = `${file}_parsed${ext}`
   }
 
-  await writeFile(outputPath, JSON.stringify({week, total}, null, 2))
+  await writeFile(
+    outputPath,
+    JSON.stringify({week, total}, (key, value) => (key.startsWith('_') ? undefined : value), 2),
+  )
 
   return outputPath
 }

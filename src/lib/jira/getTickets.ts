@@ -31,9 +31,7 @@ export async function getTickets(
       const nr = match[1]
       const description = match[2]
 
-      tickets[nr] = {nr, description: description?.trim() ?? '', summary: ''}
-
-      console.log(tickets[nr])
+      tickets[nr] = {_config: ticketConfig, nr, description: description?.trim() ?? '', summary: ''}
     }
   }
 
@@ -47,8 +45,6 @@ export async function getTickets(
 
   return Promise.all(
     Object.values(tickets).map(async ticket => {
-      console.log(ticket)
-
       const ticketInfo = await request({
         uri: `${ticketConfig.restUri}/agile/1.0/issue/${ticket.nr}?fields=summary,issuetype,parent`,
         method: 'GET',

@@ -7,6 +7,7 @@ import {promisify} from 'util'
 import getCredentials from './lib/getCredentials'
 import {getTickets} from './lib/jira/getTickets'
 import Config from './models/config'
+import {JiraCredentialConfig} from './models/jiraConfig'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -93,10 +94,9 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   let tickets: Array<Ticket> | undefined
   if (config.jira && config.jira.length) {
-    const credentialConfigs = await Promise.all(
+    const credentialConfigs: Array<JiraCredentialConfig> = await Promise.all(
       config.jira.map(async c => ({
-        restUri: c.restUri,
-        ticketPatterns: c.ticketPatterns,
+        ...c,
         credentials: await getCredentials(c.credentials),
       })),
     )
@@ -110,7 +110,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
     package: entryPackage,
     comment,
     tickets,
-    summary: tickets ? `${tickets.map(getTicketSummary)}` : comment,
+    summary: tickets ? `${tickets.map(getTicketSummary).join(', ')}` : comment,
     raw,
   }
 }

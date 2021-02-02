@@ -1,8 +1,10 @@
-import {exec} from 'child_process'
 import * as minimist from 'minimist'
+
+import {exec} from 'child_process'
 import {load as loadConfig} from './config'
 import {exportJSON} from './exporters/json'
 import {exportProjectile} from './exporters/projectile'
+import {trackTimes} from './lib/jira'
 import {parse} from './parser'
 
 const argv = minimist(process.argv)
@@ -33,6 +35,12 @@ export async function start() {
   }
 
   if (config.modes.export) {
-    await exportProjectile(config, week)
+    if (config.projectile) {
+      await exportProjectile(config, week)
+    }
+
+    if (config.jira && config.jira.length) {
+      await trackTimes(week)
+    }
   }
 }
