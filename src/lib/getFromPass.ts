@@ -3,18 +3,8 @@ import {promisify} from 'util'
 
 const exec = promisify(execCb)
 
-const _cache: Record<string, string> = {}
-
 export async function getFromPass(name: string, line: number): Promise<string> {
-  const cacheKey = `${name}_${line}`
-  if (_cache[cacheKey]) {
-    return _cache[cacheKey]
-  }
-
-  const result = await tryGetFromPass(name, line)
-  _cache[cacheKey] = result
-
-  return result
+  return tryGetFromPass(name, line)
 }
 
 async function tryGetFromPass(name: string, line: number): Promise<string> {
