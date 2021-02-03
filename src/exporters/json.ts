@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 
 import {promisify} from 'util'
-import Config from '../models/config'
+import {Config} from '../models/config'
 import {Day} from '../parser'
 
 const exists = promisify(fs.exists)

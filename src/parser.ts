@@ -4,11 +4,9 @@ import * as Path from 'path'
 import {getTicketSummary, Ticket} from './lib/jira'
 
 import {promisify} from 'util'
-import getCredentials from './lib/getCredentials'
 import {getTickets} from './lib/jira/getTickets'
 import {logger} from './lib/log'
-import Config from './models/config'
-import {JiraCredentialConfig} from './models/jiraConfig'
+import {Config} from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -105,15 +103,8 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   let tickets: Array<Ticket> | undefined
   if (config.jira && config.jira.length) {
-    const credentialConfigs: Array<JiraCredentialConfig> = await Promise.all(
-      config.jira.map(async c => ({
-        ...c,
-        credentials: await getCredentials(c.credentials),
-      })),
-    )
-
     logger.debug(`parser :: Entry :: Retrieving ticket info...`)
-    tickets = await getTickets(credentialConfigs, comment)
+    tickets = await getTickets(config.jira, comment)
     logger.debug(`parser :: Entry :: Retrieving ticket info done`)
   }
 
