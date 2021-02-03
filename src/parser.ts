@@ -6,6 +6,7 @@ import {getTicketSummary, Ticket} from './lib/jira'
 import {promisify} from 'util'
 import getCredentials from './lib/getCredentials'
 import {getTickets} from './lib/jira/getTickets'
+import {logger} from './lib/log'
 import Config from './models/config'
 import {JiraCredentialConfig} from './models/jiraConfig'
 
@@ -39,9 +40,12 @@ export async function parse(config: Config) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
   }
 
+  logger.debug(`parser :: Reading tracking file content`)
   const fileContent = (await readFile(path)).toString()
 
+  logger.debug(`parser :: Parsing days...`)
   const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config))
+  logger.debug(`parser :: Parsing days done`)
 
   return latestOnly ? [days[days.length - 1]] : days
 }
@@ -53,10 +57,17 @@ async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries...`)
   let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config))
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries done`)
 
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline...`)
   validateTimeline(entries)
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline done`)
+
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries...`)
   entries = combine(entries)
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries done`)
   entries = entries.sort((a, b) => a.package.localeCompare(b.package))
 
   return {
@@ -76,7 +87,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
   const end = getTimeOfDay(date, match[3], match[4])
   const duration = end.getHours() - start.getHours() + (end.getMinutes() - start.getMinutes()) / 60
 
-  const text = match[5].split(':')
+  const text = match[5].split(`:`)
   const shorthand = text[0]
 
   const configEntry = config.mappings[shorthand]
@@ -100,7 +111,10 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
         credentials: await getCredentials(c.credentials),
       })),
     )
+
+    logger.debug(`parser :: Entry :: Retrieving ticket info...`)
     tickets = await getTickets(credentialConfigs, comment)
+    logger.debug(`parser :: Entry :: Retrieving ticket info done`)
   }
 
   return {
@@ -110,7 +124,7 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
     package: entryPackage,
     comment,
     tickets,
-    summary: tickets ? `${tickets.map(getTicketSummary).join(', ')}` : comment,
+    summary: tickets ? `${tickets.map(getTicketSummary).join(`, `)}` : comment,
     raw,
   }
 }

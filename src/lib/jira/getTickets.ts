@@ -1,6 +1,7 @@
 import * as request from 'request-promise-native'
 
 import {JiraCredentialConfig} from '../../models/jiraConfig'
+import {logger} from '../log'
 import {Ticket} from './Ticket'
 
 export async function getTickets(
@@ -45,6 +46,7 @@ export async function getTickets(
 
   return Promise.all(
     Object.values(tickets).map(async ticket => {
+      logger.debug(`Jira :: Retrieving ticket info ${ticket.nr}...`)
       const ticketInfo = await request({
         uri: `${ticketConfig.restUri}/agile/1.0/issue/${ticket.nr}?fields=summary,issuetype,parent`,
         method: 'GET',
@@ -54,6 +56,7 @@ export async function getTickets(
           contentType: 'application/json',
         },
       })
+      logger.debug(`Jira :: Retrieving ticket info ${ticket.nr} done`)
 
       if (
         ticketInfo.fields.issuetype.name !== 'Story' &&
