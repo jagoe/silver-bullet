@@ -1,30 +1,17 @@
 interface BaseWorklog {
-  comment?: {
-    type: 'doc'
-    version: 1
-    content: [
-      {
-        type: 'paragraph'
-        content: [
-          {
-            text: string
-            type: 'text',
-          },
-        ],
-      },
-    ],
-  }
   timeSpent?: string
   timeSpentSeconds?: number
+  comment?: string
+  started: string
 }
 
 export interface CreateWorklog extends BaseWorklog {
   timeSpent: string
 }
 
-export interface GetWorklog extends CreateWorklog {
+export interface GetWorklog extends BaseWorklog {
   author: {
-    emailAddress: string,
+    emailAddress: string
   }
 }
 
@@ -32,8 +19,13 @@ export function isSameWorklog(
   worklog: GetWorklog,
   timeInMinutes: number,
   authorEmail: string,
-  comment?: string,
+  comment: string | undefined,
+  startDate: Date,
 ): boolean {
+  if (new Date(worklog.started).getTime() !== startDate.getTime()) {
+    return false
+  }
+
   if (worklog.timeSpentSeconds !== timeInMinutes * 60) {
     return false
   }
@@ -42,11 +34,11 @@ export function isSameWorklog(
     return false
   }
 
-  if (comment && !worklog.comment) {
+  if ((comment && !worklog.comment) || (!comment && worklog.comment)) {
     return false
   }
 
-  if (worklog.comment && worklog.comment.content[0].content[0].text !== comment) {
+  if (worklog.comment && worklog.comment !== comment) {
     return false
   }
 

@@ -38,7 +38,7 @@ async function trackTime(entry: Entry): Promise<void> {
 
     // get existing worklogs
     const {worklogs} = await request({
-      uri: `${ticket._config.restUri}/api/3/issue/${ticket.nr}/worklog`,
+      uri: `${ticket._config.restUri}/api/2/issue/${ticket.nr}/worklog`,
       method: 'GET',
       json: true,
       headers: {
@@ -50,34 +50,23 @@ async function trackTime(entry: Entry): Promise<void> {
     // skip if this log already exists
     if (
       worklogs.some((worklog: GetWorklog) =>
-        isSameWorklog(worklog, ticketDuration, ticket._config.credentials.username, ticket.description),
+        isSameWorklog(worklog, ticketDuration, ticket._config.credentials.username, ticket.description, entry.start),
       )
     ) {
       continue
     }
 
     // create worklog
-    const payload: CreateWorklog = {timeSpent: `${ticketDuration}m`}
+    const payload: CreateWorklog = {
+      timeSpent: `${ticketDuration}m`,
+      started: entry.start.toISOString().replace('Z', '+0000'),
+    }
     if (ticket.description) {
-      payload.comment = {
-        type: 'doc',
-        version: 1,
-        content: [
-          {
-            type: 'paragraph',
-            content: [
-              {
-                text: ticket.description,
-                type: 'text',
-              },
-            ],
-          },
-        ],
-      }
+      payload.comment = ticket.description
     }
 
     await request({
-      uri: `${ticket._config.restUri}/api/3/issue/${ticket.nr}/worklog`,
+      uri: `${ticket._config.restUri}/api/2/issue/${ticket.nr}/worklog`,
       method: 'POST',
       json: true,
       headers: {
