@@ -9,7 +9,7 @@
   "scripts": {
     "prebuild": "rm -rf dist && yarn lint",
     "build": "tsc",
-    "lint": "tslint --project tsconfig.json --fix --format codeFrame",
+    "lint": "eslint src --fix",
     "mocha": "NODE_ENV=test mocha --opts mocha.opts",
     "prestart": "yarn build",
     "start": "node ./bin/silverbullet",
@@ -29,9 +29,11 @@
     "@types/node": "^14.0.26",
     "@types/pino": "^6.3.5",
     "@types/request-promise-native": "^1.0.17",
+    "@typescript-eslint/eslint-plugin": "^4.14.2",
+    "@typescript-eslint/parser": "^4.14.2",
     "chai": "^4.2.0",
+    "eslint": "^7.19.0",
     "mocha": "^8.0.1",
-    "tslint": "^6.1.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {

@@ -1,11 +1,10 @@
+import {Credentials} from './credentials'
+
 export default interface CredentialSettings {
-  basic?: {
-    username: string
-    password: string,
-  }
+  basic?: Credentials
   pass?: {
     name: string
     usernameLine: number
-    passwordLine: number,
+    passwordLine: number
   }
 }

@@ -11,7 +11,7 @@ export interface CreateWorklog extends BaseWorklog {
 
 export interface GetWorklog extends BaseWorklog {
   author: {
-    emailAddress: string
+    emailAddress: string,
   }
 }
 

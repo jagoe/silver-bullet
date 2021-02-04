@@ -1,8 +1,8 @@
 import * as request from 'request-promise-native'
 
 import {JiraCredentialConfig} from '../../models/jiraConfig'
-import {logger} from '../log'
 import {Ticket} from './Ticket'
+import {logger} from '../log'
 
 export async function getTickets(
   jiraConfigs: Array<JiraCredentialConfig>,
@@ -23,8 +23,7 @@ export async function getTickets(
 
   for (const pattern of ticketPatterns) {
     let match: RegExpExecArray | null
-    while (true) {
-      match = pattern.exec(comment)
+    while ((match = pattern.exec(comment))) {
       if (!match) {
         break
       }

@@ -1,13 +1,13 @@
 import * as fs from 'fs'
 
-import {promisify} from 'util'
 import {Config} from '../models/config'
 import {Day} from '../parser'
+import {promisify} from 'util'
 
 const exists = promisify(fs.exists)
 const writeFile = promisify(fs.writeFile)
 
-export async function exportJSON(config: Config, week: Array<Day>) {
+export async function exportJSON(config: Config, week: Array<Day>): Promise<string> {
   const total = week.reduce((sum, day) => sum + day.total, 0)
   let outputPath
 

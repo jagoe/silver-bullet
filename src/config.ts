@@ -1,14 +1,14 @@
 import deepMerge = require('deep-merge')
 
+import * as Path from 'path'
 import * as fs from 'fs'
 import * as minimist from 'minimist'
-import * as Path from 'path'
 
 import {Config, ConfigWithoutCredentials} from './models/config'
 
+import getCredentials from './lib/getCredentials'
 import {homedir} from 'os'
 import {promisify} from 'util'
-import getCredentials from './lib/getCredentials'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -69,7 +69,7 @@ export async function load(): Promise<Config> {
   const userConfig = await readConfig(configPath)
   if (userConfig) {
     const merge = deepMerge((_a, b) => b)
-    config = merge(defaultConfig, userConfig)
+    config = merge(defaultConfig, userConfig) as ConfigWithoutCredentials
 
     if (config.path.startsWith('~/')) {
       config.path = config.path.replace('~', homedir())

@@ -1,4 +1,5 @@
 import CredentialSettings from './credentialSettings'
+import {Credentials} from './credentials'
 
 interface JiraBaseConfig {
   restUri: string
@@ -11,8 +12,5 @@ export interface JiraConfig extends JiraBaseConfig {
 }
 
 export interface JiraCredentialConfig extends JiraBaseConfig {
-  credentials: {
-    username: string
-    password: string,
-  }
+  credentials: Credentials
 }

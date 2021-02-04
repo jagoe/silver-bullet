@@ -1,12 +1,12 @@
-import * as fs from 'fs'
 import * as Path from 'path'
+import * as fs from 'fs'
 
-import {getTicketSummary, Ticket} from './lib/jira'
+import {Ticket, getTicketSummary} from './lib/jira'
 
-import {promisify} from 'util'
+import {Config} from './models/config'
 import {getTickets} from './lib/jira/getTickets'
 import {logger} from './lib/log'
-import {Config} from './models/config'
+import {promisify} from 'util'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -30,7 +30,7 @@ export interface Day {
 }
 
 const dayPattern = /(?:\w+\/)?(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
-export async function parse(config: Config) {
+export async function parse(config: Config): Promise<Day[]> {
   const {path} = config
   const {latestOnly} = config.modes
 
@@ -48,7 +48,7 @@ export async function parse(config: Config) {
   return latestOnly ? [days[days.length - 1]] : days
 }
 
-const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g
+const entryPattern = /(\d\d)[:.](\d\d).+?(\d\d)[:.](\d\d) (.+)/g
 async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)

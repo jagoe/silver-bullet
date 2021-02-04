@@ -1,16 +1,16 @@
 import * as minimist from 'minimist'
 
 import {exec} from 'child_process'
-import {load as loadConfig} from './config'
 import {exportJSON} from './exporters/json'
 import {exportProjectile} from './exporters/projectile'
-import {trackTimes} from './lib/jira'
+import {load as loadConfig} from './config'
 import {logger} from './lib/log'
 import {parse} from './parser'
+import {trackTimes} from './lib/jira'
 
 const argv = minimist(process.argv)
 
-export async function start() {
+export async function start(): Promise<void> {
   const config = await loadConfig()
 
   // tracking mode

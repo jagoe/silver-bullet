@@ -1,9 +1,10 @@
 import CredentialSettings from './credentialSettings'
+import {Credentials} from './credentials'
 
 interface ProjectileConfigBase {
   api: {
     host: string
-    port: number,
+    port: number
   }
 }
 
@@ -12,8 +13,5 @@ export interface ProjectileConfig extends ProjectileConfigBase {
 }
 
 export interface ProjectileConfigWithCredentials extends ProjectileConfigBase {
-  credentials: {
-    username: string
-    password: string,
-  }
+  credentials: Credentials
 }

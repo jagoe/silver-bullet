@@ -2,16 +2,17 @@ import * as request from 'request-promise-native'
 
 import {Day, Entry} from '../parser'
 
-import {inspect} from 'util'
 import {Config} from '../models/config'
+import {Credentials} from '../models/credentials'
+import {inspect} from 'util'
 
-export async function exportProjectile(config: Config, week: Array<Day>) {
+export async function exportProjectile(config: Config, week: Array<Day>): Promise<void> {
   if (!config.projectile) {
     console.log('Projectile API configuration missing!')
     process.exit(1)
   }
 
-  const uri = `${config.projectile!.api.host}:${config.projectile!.api.port}`
+  const uri = `${config.projectile.api.host}:${config.projectile.api.port}`
 
   const token = await login(uri, config.projectile.credentials)
 
@@ -22,7 +23,7 @@ export async function exportProjectile(config: Config, week: Array<Day>) {
   }
 }
 
-async function login(uri: string, credentials: any) {
+async function login(uri: string, credentials: Credentials) {
   const result = await request({
     uri: `${uri}/api/v1/login`,
     method: 'POST',

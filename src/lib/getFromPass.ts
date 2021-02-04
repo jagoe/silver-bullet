@@ -8,7 +8,7 @@ export async function getFromPass(name: string, line: number): Promise<string> {
 }
 
 async function tryGetFromPass(name: string, line: number): Promise<string> {
-  let output: string = ''
+  let output = ''
   let result: {stdout: string; stderr: string} | null = null
 
   for (let tries = 0; !output && tries < 30; tries++) {
