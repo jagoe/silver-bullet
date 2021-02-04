@@ -95,10 +95,17 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   const entryPackage = `${configEntry.projectNr}-${configEntry.packageNr}`
 
-  let comment = text[1] || configEntry.comment
-  if (!comment) {
+  if (!configEntry.comment && !text[1]) {
     throw new Error(`Comment missing for entry ${raw}`)
   }
+
+  let comment: string
+  if (configEntry.comment) {
+    comment = `${configEntry.comment}${text[1] ? ` (${text[1].trim()})` : ''}`
+  } else {
+    comment = text[1]
+  }
+
   comment = comment.trim()
 
   let tickets: Array<Ticket> | undefined
