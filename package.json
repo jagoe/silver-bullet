@@ -1,6 +1,6 @@
 {
   "name": "silverbullet",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "Consumes a text file with tracked days and a project mapping file and provides shortcuts to automatically enter work durations and descriptions for the correct projects into projectile fields.",
   "main": "./dist/index.js",
   "author": "JG",
@@ -9,7 +9,7 @@
   "scripts": {
     "prebuild": "rm -rf dist && yarn lint",
     "build": "tsc",
-    "lint": "tslint --project tsconfig.json --fix --format codeFrame",
+    "lint": "eslint src --fix",
     "mocha": "NODE_ENV=test mocha --opts mocha.opts",
     "prestart": "yarn build",
     "start": "node ./bin/silverbullet",
@@ -27,15 +27,20 @@
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^8.0.0",
     "@types/node": "^14.0.26",
+    "@types/pino": "^6.3.5",
     "@types/request-promise-native": "^1.0.17",
+    "@typescript-eslint/eslint-plugin": "^4.14.2",
+    "@typescript-eslint/parser": "^4.14.2",
     "chai": "^4.2.0",
+    "eslint": "^7.19.0",
     "mocha": "^8.0.1",
-    "tslint": "^6.1.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {
     "deep-merge": "^1.0.0",
     "minimist": "^1.2.5",
+    "pino": "^6.11.0",
+    "pino-pretty": "^4.5.0",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9"
   }

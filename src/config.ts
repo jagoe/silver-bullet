@@ -1,10 +1,14 @@
 import deepMerge = require('deep-merge')
+
+import * as Path from 'path'
 import * as fs from 'fs'
 import * as minimist from 'minimist'
+
+import {Config, ConfigWithoutCredentials} from './models/config'
+
+import getCredentials from './lib/getCredentials'
 import {homedir} from 'os'
-import * as Path from 'path'
 import {promisify} from 'util'
-import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -27,7 +31,7 @@ const {config: configPath, edit: editConfig, export: _export, preview, latest} =
   },
 })
 
-const defaultConfig: Config = {
+const defaultConfig: ConfigWithoutCredentials = {
   editor: getCommandLine(),
   path: Path.join(homedir(), 'time.txt'),
   configPath,
@@ -55,21 +59,36 @@ function getCommandLine() {
 /**
  * Loads the configuration, merging it with an optional user-defined config.json
  */
-export async function load() {
+export async function load(): Promise<Config> {
   if (_config) {
     return _config
   }
 
-  _config = defaultConfig
+  let config = defaultConfig
 
   const userConfig = await readConfig(configPath)
   if (userConfig) {
     const merge = deepMerge((_a, b) => b)
-    _config = merge(defaultConfig, userConfig)
+    config = merge(defaultConfig, userConfig) as ConfigWithoutCredentials
 
-    if (_config.path.startsWith('~/')) {
-      _config.path = _config.path.replace('~', homedir())
+    if (config.path.startsWith('~/')) {
+      config.path = config.path.replace('~', homedir())
     }
+  }
+
+  _config = {
+    ...config,
+    jira: config.jira
+      ? await Promise.all(
+          config.jira.map(async jiraConfig => ({
+            ...jiraConfig,
+            credentials: await getCredentials(jiraConfig.credentials),
+          })),
+        )
+      : undefined,
+    projectile: config.projectile
+      ? {...config.projectile, credentials: await getCredentials(config.projectile.credentials)}
+      : undefined,
   }
 
   return _config

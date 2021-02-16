@@ -1,10 +1,11 @@
 import CredentialSettings from '../models/credentialSettings'
+import {Credentials} from '../models/credentials'
 import {getFromPass} from './getFromPass'
 import {getInput} from './getInput'
 
-export default async function getCredentials(credentialSection?: CredentialSettings) {
-  let username: string = ''
-  let password: string = ''
+export default async function getCredentials(credentialSection?: CredentialSettings): Promise<Credentials> {
+  let username = ''
+  let password = ''
 
   if (credentialSection) {
     const {basic, pass} = credentialSection

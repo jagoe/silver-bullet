@@ -1,20 +1,13 @@
-import CredentialSettings from './credentialSettings'
-import {JiraConfig} from './jiraConfig'
+import {JiraConfig, JiraCredentialConfig} from './jiraConfig'
+import {ProjectileConfig, ProjectileConfigWithCredentials} from './projectileConfig'
+
 import Mapping from './mapping'
 
-export default interface Config {
+interface ConfigBase {
   editor: string
   configPath: string
   path: string
   mappings: {[key: string]: Mapping}
-  projectile?: {
-    api: {
-      host: string
-      port: number,
-    }
-    credentials: CredentialSettings,
-  }
-  jira?: Array<JiraConfig>
   modes: {
     preview: boolean | string
     showAfterPreview: boolean
@@ -22,4 +15,14 @@ export default interface Config {
     latestOnly: boolean
     editConfig: boolean,
   }
+}
+
+export interface ConfigWithoutCredentials extends ConfigBase {
+  projectile?: ProjectileConfig
+  jira?: Array<JiraConfig>
+}
+
+export interface Config extends ConfigBase {
+  jira?: Array<JiraCredentialConfig>
+  projectile?: ProjectileConfigWithCredentials
 }

@@ -1,16 +1,16 @@
 import CredentialSettings from './credentialSettings'
+import {Credentials} from './credentials'
 
-export interface JiraConfig {
+interface JiraBaseConfig {
   restUri: string
-  credentials: CredentialSettings
   ticketPatterns: Array<string>
+  trackTimes?: boolean
 }
 
-export interface JiraCredentialConfig {
-  restUri: string
-  credentials: {
-    username: string
-    password: string,
-  }
-  ticketPatterns: Array<string>
+export interface JiraConfig extends JiraBaseConfig {
+  credentials: CredentialSettings
+}
+
+export interface JiraCredentialConfig extends JiraBaseConfig {
+  credentials: Credentials
 }

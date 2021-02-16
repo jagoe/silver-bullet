@@ -1,9 +1,12 @@
-import * as fs from 'fs'
 import * as Path from 'path'
+import * as fs from 'fs'
+
+import {Ticket, getTicketSummary} from './lib/jira'
+
+import {Config} from './models/config'
+import {getTickets} from './lib/jira/getTickets'
+import {logger} from './lib/log'
 import {promisify} from 'util'
-import getCredentials from './lib/getCredentials'
-import {getTicketSummary} from './lib/jira'
-import Config from './models/config'
 
 const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
@@ -14,7 +17,7 @@ export interface Entry {
   duration: number
   package: string
   comment: string
-  ticketSummary?: string
+  tickets?: Array<Ticket>
   summary: string
   raw?: string
 }
@@ -27,7 +30,7 @@ export interface Day {
 }
 
 const dayPattern = /(?:\w+\/)?(\d\d)\.(\d\d)\.\s*((?:.+?\r?\n?)+\r?\n?)/g
-export async function parse(config: Config) {
+export async function parse(config: Config): Promise<Day[]> {
   const {path} = config
   const {latestOnly} = config.modes
 
@@ -35,24 +38,34 @@ export async function parse(config: Config) {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
   }
 
+  logger.debug(`parser :: Reading tracking file content`)
   const fileContent = (await readFile(path)).toString()
 
+  logger.debug(`parser :: Parsing days...`)
   const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config))
+  logger.debug(`parser :: Parsing days done`)
 
   return latestOnly ? [days[days.length - 1]] : days
 }
 
-const entryPattern = /(\d\d)[:\.](\d\d).+?(\d\d)[:\.](\d\d) (.+)/g
+const entryPattern = /(\d\d)[:.](\d\d).+?(\d\d)[:.](\d\d) (.+)/g
 async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries...`)
   let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config))
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries done`)
 
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline...`)
   validateTimeline(entries)
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline done`)
+
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries...`)
   entries = combine(entries)
+  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries done`)
   entries = entries.sort((a, b) => a.package.localeCompare(b.package))
 
   return {
@@ -72,9 +85,8 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
   const end = getTimeOfDay(date, match[3], match[4])
   const duration = end.getHours() - start.getHours() + (end.getMinutes() - start.getMinutes()) / 60
 
-  const text = match[5].split(':')
+  const text = match[5].split(`:`)
   const shorthand = text[0]
-  let ticketSummary: string | undefined
 
   const configEntry = config.mappings[shorthand]
   if (!configEntry) {
@@ -83,21 +95,24 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   const entryPackage = `${configEntry.projectNr}-${configEntry.packageNr}`
 
-  let comment = text[1] || configEntry.comment
-  if (!comment) {
+  if (!configEntry.comment && !text[1]) {
     throw new Error(`Comment missing for entry ${raw}`)
   }
+
+  let comment: string
+  if (configEntry.comment) {
+    comment = `${configEntry.comment}${text[1] ? ` (${text[1].trim()})` : ''}`
+  } else {
+    comment = text[1]
+  }
+
   comment = comment.trim()
 
+  let tickets: Array<Ticket> | undefined
   if (config.jira && config.jira.length) {
-    const credentialConfigs = await Promise.all(
-      config.jira.map(async c => ({
-        restUri: c.restUri,
-        ticketPatterns: c.ticketPatterns,
-        credentials: await getCredentials(c.credentials),
-      })),
-    )
-    ticketSummary = await getTicketSummary(credentialConfigs, comment)
+    logger.debug(`parser :: Entry :: Retrieving ticket info...`)
+    tickets = await getTickets(config.jira, comment)
+    logger.debug(`parser :: Entry :: Retrieving ticket info done`)
   }
 
   return {
@@ -106,8 +121,8 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
     duration,
     package: entryPackage,
     comment,
-    ticketSummary,
-    summary: ticketSummary ? `${comment} (${ticketSummary})` : comment,
+    tickets,
+    summary: tickets ? `${tickets.map(getTicketSummary).join(`, `)}` : comment,
     raw,
   }
 }
