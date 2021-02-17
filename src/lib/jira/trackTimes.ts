@@ -76,11 +76,4 @@ async function trackTime(entry: Entry): Promise<void> {
       body: payload,
     })
   }
-
-  // track times in Jira
-  // 1. (prob. not) worklog https://trtl.atlassian.net/rest/api/3/issue/FMFS-1/worklog
-  // 2. create worklog POST https://trtl.atlassian.net/rest/api/3/issue/FMFS-1/worklog {"timeSpentSeconds": 86400}
-  // 3. (prob. not) OR PUT https://trtl.atlassian.net/rest/api/3/issue/FMFS-1/worklog/10000 {"timeSpentSeconds": 86400}
-  //
-  // test API token HxFcKEtgrkGQZsOZPRLZE00C
 }
