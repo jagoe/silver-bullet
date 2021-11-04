@@ -6,7 +6,7 @@ import {exportProjectile} from './exporters/projectile'
 import {load as loadConfig} from './config'
 import {logger} from './lib/log'
 import {parse} from './parser'
-import {trackTimes} from './lib/jira'
+import {trackTimesInJira} from './lib/jira'
 
 const argv = minimist(process.argv)
 
@@ -49,7 +49,7 @@ export async function start(): Promise<void> {
 
     if (config.jira && config.jira.length) {
       logger.trace('start :: Jira export starting...')
-      await trackTimes(week)
+      await trackTimesInJira(week)
       logger.trace('start :: Jira export done')
     }
   }
