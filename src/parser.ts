@@ -38,12 +38,12 @@ export async function parse(config: Config): Promise<Day[]> {
     throw new Error(`no time tracking file found at ${Path.normalize(Path.join(__dirname, path))}`)
   }
 
-  logger.debug(`parser :: Reading tracking file content`)
+  logger.trace(`parser :: Reading tracking file content`)
   const fileContent = (await readFile(path)).toString()
 
-  logger.debug(`parser :: Parsing days...`)
+  logger.trace(`parser :: Parsing days...`)
   const days = await loopRegex(dayPattern, fileContent, async m => await parseDay(m, config))
-  logger.debug(`parser :: Parsing days done`)
+  logger.trace(`parser :: Parsing days done`)
 
   return latestOnly ? [days[days.length - 1]] : days
 }
@@ -55,17 +55,17 @@ async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const date = new Date(Date.UTC(new Date().getFullYear(), month, day))
   const entryBlock = match[3]
 
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries...`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries...`)
   let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config))
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries done`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries done`)
 
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline...`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline...`)
   validateTimeline(entries)
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline done`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline done`)
 
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries...`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries...`)
   entries = combine(entries)
-  logger.debug(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries done`)
+  logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Combining entries done`)
   entries = entries.sort((a, b) => a.package.localeCompare(b.package))
 
   return {
@@ -110,9 +110,9 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
 
   let tickets: Array<Ticket> | undefined
   if (config.jira && config.jira.length) {
-    logger.debug(`parser :: Entry :: Retrieving ticket info...`)
+    logger.trace(`parser :: Entry :: Retrieving ticket info...`)
     tickets = await getTickets(config.jira, comment)
-    logger.debug(`parser :: Entry :: Retrieving ticket info done`)
+    logger.trace(`parser :: Entry :: Retrieving ticket info done`)
   }
 
   return {

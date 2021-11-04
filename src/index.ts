@@ -16,43 +16,43 @@ export async function start(): Promise<void> {
   // tracking mode
   if (Object.keys(argv).length === 1) {
     // no arguments - open tracker
-    logger.debug('start :: Opening tracking file')
+    logger.trace('start :: Opening tracking file')
     exec(`${config.editor} ${config.path}`)
     return
   }
 
   // edit mode
   if (config.modes.editConfig) {
-    logger.debug('start :: Opening config')
+    logger.trace('start :: Opening config')
     exec(`${config.editor} ${config.configPath}`)
     return
   }
 
-  logger.debug('start :: Parsing tracking file')
+  logger.trace('start :: Parsing tracking file')
   const week = await parse(config)
 
   // preview mode
   if (config.modes.preview) {
-    logger.debug('start :: Generating preview')
+    logger.trace('start :: Generating preview')
     const path = await exportJSON(config, week)
     exec(`${config.editor} ${path}`)
     return
   }
 
   if (config.modes.export) {
-    logger.debug('start :: Exports starting...')
+    logger.trace('start :: Exports starting...')
     if (config.projectile) {
-      logger.debug('start :: Projectile export starting...')
+      logger.trace('start :: Projectile export starting...')
       await exportProjectile(config, week)
-      logger.debug('start :: Projectile export done')
+      logger.trace('start :: Projectile export done')
     }
 
     if (config.jira && config.jira.length) {
-      logger.debug('start :: Jira export starting...')
+      logger.trace('start :: Jira export starting...')
       await trackTimes(week)
-      logger.debug('start :: Jira export done')
+      logger.trace('start :: Jira export done')
     }
   }
 
-  logger.debug('start :: Done')
+  logger.trace('start :: Done')
 }
