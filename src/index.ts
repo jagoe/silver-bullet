@@ -2,11 +2,11 @@ import * as minimist from 'minimist'
 
 import {exec} from 'child_process'
 import {exportJSON} from './exporters/json'
-import {exportProjectile} from './exporters/projectile'
 import {load as loadConfig} from './config'
 import {logger} from './lib/log'
 import {parse} from './parser'
 import {trackTimesInJira} from './lib/jira'
+import {trackTimesInProjectile} from './lib/projectile'
 
 const argv = minimist(process.argv)
 
@@ -43,7 +43,7 @@ export async function start(): Promise<void> {
     logger.trace('start :: Exports starting...')
     if (config.projectile) {
       logger.trace('start :: Projectile export starting...')
-      await exportProjectile(config, week)
+      await trackTimesInProjectile(week, config.projectile)
       logger.trace('start :: Projectile export done')
     }
 
