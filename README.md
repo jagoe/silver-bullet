@@ -29,8 +29,8 @@ A projectile booking tool
   "path": "~/time.txt",
   "projectile": {
     "api": {
-      "host": "http://localhost",
-      "port": 7466
+      "restUri": "http://localhost:8001/projectile/rest",
+      "app": 0
     },
     "credentials": {
       "basic": {
@@ -82,6 +82,8 @@ A projectile booking tool
 * `path`: Path of the time tracking file
 * `projectile`: Connection information for the Projectile API
   * `api`: Location of an instance of the 7val Projectile API
+    * `restUri`: URI pointing to the REST endpoint of the Projectile instance
+    * `app`: App ID (if you don't know what it is, it's probably `0`)
   * `credentials`: Projectile [credentials](#credentials) (only one is necessary)
 * `jira`: Configuration used for JIRA ticket information extraction; able to handle multiple JIRA endpoints
   * `restUri`: URI of the JIRA REST API
