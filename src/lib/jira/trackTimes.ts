@@ -3,7 +3,7 @@ import * as request from 'request-promise-native'
 import {Day, Entry} from '../../parser'
 import {CreateWorklog, GetWorklog, isSameWorklog} from './Worklog'
 
-export async function trackTimes(week: Array<Day>): Promise<void> {
+export async function trackTimesInJira(week: Array<Day>): Promise<void> {
   for (const day of week) {
     for (const entry of day.entries) {
       await trackTime(entry)

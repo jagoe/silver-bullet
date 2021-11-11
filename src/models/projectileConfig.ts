@@ -3,8 +3,8 @@ import {Credentials} from './credentials'
 
 interface ProjectileConfigBase {
   api: {
-    host: string
-    port: number
+    restUri: string
+    app: number
   }
 }
 
