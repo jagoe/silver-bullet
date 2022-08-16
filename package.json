@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "deep-merge": "^1.0.0",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "pino": "^6.11.0",
     "pino-pretty": "^4.5.0",
     "request": "^2.88.2",
