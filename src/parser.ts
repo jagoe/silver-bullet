@@ -48,7 +48,7 @@ export async function parse(config: Config): Promise<Day[]> {
   return latestOnly ? [days[days.length - 1]] : days
 }
 
-const entryPattern = /(\d\d)[:.](\d\d).+?(\d\d)[:.](\d\d) (.+)/g
+const entryPattern = /(?:\/\/ )?(\d\d)[:.](\d\d).+?(\d\d)[:.](\d\d) (.+)/g
 async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   const month = parseInt(match[2], 10) - 1
   const day = parseInt(match[1], 10)
@@ -57,6 +57,7 @@ async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
 
   logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries...`)
   let entries = await loopRegex(entryPattern, entryBlock, async m => await parseEntry(m, date, config))
+
   logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Parsing entries done`)
 
   logger.trace(`parser :: Day (${date.toLocaleDateString()}) :: Validating timeline...`)
@@ -78,8 +79,14 @@ async function parseDay(match: RegExpExecArray, config: Config): Promise<Day> {
   }
 }
 
-async function parseEntry(match: RegExpExecArray, date: Date, config: Config): Promise<Entry> {
+async function parseEntry(match: RegExpExecArray, date: Date, config: Config): Promise<Entry | null> {
   const raw = match[0]
+  logger.trace(`parser :: Entry :: Parsing entry ${raw}...`)
+
+  if (raw.startsWith('#') || raw.startsWith('//')) {
+    logger.trace(`parser :: Entry :: Skipping entry ${raw}; is a comment.`)
+    return null
+  }
 
   const start = getTimeOfDay(date, match[1], match[2])
   const end = getTimeOfDay(date, match[3], match[4])
@@ -114,6 +121,8 @@ async function parseEntry(match: RegExpExecArray, date: Date, config: Config): P
     tickets = await getTickets(config.jira, comment)
     logger.trace(`parser :: Entry :: Retrieving ticket info done`)
   }
+
+  logger.trace(`parser :: Entry :: Parsing entry ${raw} done.`)
 
   return {
     start,
@@ -160,8 +169,12 @@ function combine(entries: Array<Entry>) {
   return Object.values(combined)
 }
 
-async function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExecArray) => Promise<T>) {
-  const entries: Array<Promise<T>> = []
+async function loopRegex<T>(
+  pattern: RegExp,
+  text: string,
+  fn: (match: RegExpExecArray) => Promise<T | null>,
+): Promise<T[]> {
+  const entries: Array<Promise<T | null>> = []
   let match: RegExpExecArray | null
 
   do {
@@ -173,7 +186,9 @@ async function loopRegex<T>(pattern: RegExp, text: string, fn: (match: RegExpExe
     entries.push(fn(match))
   } while (match)
 
-  return await Promise.all(entries)
+  const allEntries = await Promise.all(entries)
+  const validEntries = allEntries.filter(e => e !== null) as Array<T>
+  return validEntries
 }
 
 function getTimeOfDay(date: Date, hour: string, minute: string) {

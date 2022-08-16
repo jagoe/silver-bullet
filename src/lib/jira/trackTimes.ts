@@ -63,6 +63,8 @@ async function trackTime(entry: Entry): Promise<void> {
     }
     if (ticket.description) {
       payload.comment = ticket.description
+    } else {
+      payload.comment = ticket.nr
     }
 
     await request({
