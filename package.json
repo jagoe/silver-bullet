@@ -7,14 +7,14 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "prebuild": "rm -rf dist && yarn lint",
+    "prebuild": "rm -rf dist && npm run lint",
     "build": "tsc",
     "lint": "eslint src --fix",
     "mocha": "NODE_ENV=test mocha --opts mocha.opts",
-    "prestart": "yarn build",
+    "prestart": "npm run build",
     "start": "node ./bin/silverbullet",
-    "test": "yarn lint && yarn mocha",
-    "predeploy": "NODE_ENV=production yarn build",
+    "test": "npm run lint && npm run mocha",
+    "predeploy": "NODE_ENV=production npm run build",
     "deploy": "cp -fru -t ~/bin/_silverbullet bin dist node_modules"
   },
   "files": [
