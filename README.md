@@ -14,9 +14,9 @@ A projectile booking tool
 ## Installation
 
 1. `git clone git@github.com:jagoe/silver-bullet.git`
-2. `cd silver-bullet && yarn install`
+2. `cd silver-bullet && npm install`
 3. Adjust the `deploy` NPM script if you prefer a different location
-4. `yarn deploy`
+4. `npm run deploy`
 5. [Configure](#configuration)
 
 ## Configuration

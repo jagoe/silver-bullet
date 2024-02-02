@@ -1,5 +1,3 @@
-import * as minimist from 'minimist'
-
 import {exec} from 'child_process'
 import {exportJSON} from './exporters/json'
 import {load as loadConfig} from './config'
@@ -8,13 +6,11 @@ import {parse} from './parser'
 import {trackTimesInJira} from './lib/jira'
 import {trackTimesInProjectile} from './lib/projectile'
 
-const argv = minimist(process.argv)
-
 export async function start(): Promise<void> {
   const config = await loadConfig()
 
   // tracking mode
-  if (Object.keys(argv).length === 1) {
+  if (config.modes.editTimes) {
     // no arguments - open tracker
     logger.trace('start :: Opening tracking file')
     exec(`${config.editor} ${config.path}`)

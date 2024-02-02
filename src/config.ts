@@ -14,7 +14,13 @@ const readFile = promisify(fs.readFile)
 const exists = promisify(fs.exists)
 let _config: Config
 
-const {config: configPath, edit: editConfig, export: _export, preview, latest} = minimist(process.argv, {
+const {
+  config: configPath,
+  edit: editConfig,
+  export: _export,
+  preview,
+  latest,
+} = minimist(process.argv, {
   alias: {
     c: 'config',
     e: 'edit',
@@ -42,6 +48,7 @@ const defaultConfig: ConfigWithoutCredentials = {
     export: _export,
     editConfig,
     latestOnly: latest,
+    editTimes: !preview && !editConfig && !_export,
   },
 }
 
