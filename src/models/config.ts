@@ -13,7 +13,8 @@ interface ConfigBase {
     showAfterPreview: boolean
     export: boolean
     latestOnly: boolean
-    editConfig: boolean,
+    editConfig: boolean
+    editTimes: boolean
   }
 }
 
